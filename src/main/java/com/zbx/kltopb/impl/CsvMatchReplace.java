@@ -55,6 +55,9 @@ public class CsvMatchReplace implements MatchReplace {
      */
     public void calcDecrease(CsvRow row) {
         String edge = row.get(19);
+        if (StrUtil.isNotEmpty(edge)) {
+            row.set(19, edge + " ★");
+        }
         if (StrUtil.length(edge) == 4 && edge.contains("2")) {
             double length = Double.parseDouble(row.get(14));
             double width = Double.parseDouble(row.get(15));

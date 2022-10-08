@@ -65,6 +65,9 @@ public class ExcelMatchReplace implements MatchReplace {
         Cell cell = row.getCell(19);
         if (ObjectUtil.isNull(cell)) return;
         String edge = cell.getStringCellValue();
+        if (StrUtil.isNotEmpty(edge)) {
+            writer.getCell(cell.getColumnIndex(), cell.getRowIndex()).setCellValue(edge + " ★");
+        }
         if (StrUtil.length(edge) == 4 && edge.contains("2")) {
             double length = Double.parseDouble(row.getCell(14).getStringCellValue());
             double width = Double.parseDouble(row.getCell(15).getStringCellValue());
