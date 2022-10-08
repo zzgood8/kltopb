@@ -37,7 +37,7 @@
 
     <build>
         <!-- 项目最终打包成的名字 -->
-        <finalName>src</finalName>
+        <finalName>kltopb-lib</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
