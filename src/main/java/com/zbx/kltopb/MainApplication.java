@@ -14,6 +14,10 @@ import java.io.File;
  * @描述
  **/
 public class MainApplication {
+
+    private final static MatchReplace csv = new CsvMatchReplace();
+    private final static MatchReplace excel = new ExcelMatchReplace();
+
     public static void main(String[] args) {
 
         if (ArrayUtil.isEmpty(args) || args.length != 2) {
@@ -26,28 +30,37 @@ public class MainApplication {
         if (!inputDir.exists() || !inputDir.isDirectory()) exit("输入目录不存在或者不是文件夹");
         if (!outputDir.exists() || !outputDir.isDirectory()) exit("输出目录不存在或者不是文件夹");
 
-        File[] files = inputDir.listFiles(pathname -> pathname.getName().toUpperCase().matches(".+\\.((XLS)|(XLSX)|(CSV))$"));
-        if (ArrayUtil.isEmpty(files)) exit("输入文件夹为空");
-
-        MatchReplace csv = new CsvMatchReplace();
-        MatchReplace excel = new ExcelMatchReplace();
-
-        assert files != null;
-        for (File file : files) {
-            String fileType = file.getName().substring(file.getName().lastIndexOf(".") + 1);
-            try {
-                if (StrUtil.equalsIgnoreCase(fileType, "CSV")) {
-                    csv.replace(file, outputDir);
-                } else {
-                    excel.replace(file, outputDir);
-                }
-            }catch (Exception e) {
-                System.out.println("发生未处理异常!");
-                e.printStackTrace();
-                System.exit(-1);
-            }
-
+        try {
+            convert(inputDir, outputDir);
+        } catch (Exception e) {
+            System.out.println("发生未处理异常!");
+            e.printStackTrace();
+            System.exit(-1);
         }
+    }
+
+    public static void convert(File in, File out) throws Exception {
+        File[] files = in.listFiles();
+        if (ArrayUtil.isEmpty(files)) return;
+        for (File file : files) {
+            // 文件夹递归调用
+            if (file.isDirectory()) {
+                File outDir = new File(out + File.separator + file.getName());
+                if (!outDir.exists()) outDir.mkdir();
+                convert(file, outDir);
+                file.delete();
+            }
+            // 解析文件
+            if (file.getName().toUpperCase().matches(".+\\.((XLS)|(XLSX)|(CSV))$")) {
+                String fileType = file.getName().substring(file.getName().lastIndexOf(".") + 1);
+                if (StrUtil.equalsIgnoreCase(fileType, "CSV")) {
+                    csv.replace(file, out);
+                } else {
+                    excel.replace(file, out);
+                }
+            }
+        }
+
     }
 
     public static void exit(String msg) {
