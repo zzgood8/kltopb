@@ -2,13 +2,18 @@ package com.zbx.kltopb.impl;
 
 import cn.hutool.core.lang.Console;
 import cn.hutool.core.text.csv.*;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.zbx.kltopb.MatchReplace;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
 
 /**
  * @日期 2022/10/7
@@ -16,6 +21,8 @@ import java.nio.charset.Charset;
  * @描述
  **/
 public class CsvMatchReplace implements MatchReplace {
+
+    private final DecimalFormat format = new DecimalFormat("#.#");
 
     @Override
     public void replace(File file, File outDir) throws Exception {
@@ -28,6 +35,7 @@ public class CsvMatchReplace implements MatchReplace {
             replacePB(row, 9);
             replacePB(row, 27);
             calcDecrease(row);
+            change9Line(row);
         }
         writer.write(read);
         writer.flush();
@@ -55,16 +63,33 @@ public class CsvMatchReplace implements MatchReplace {
      */
     public void calcDecrease(CsvRow row) {
         String edge = row.get(19);
-        if (StrUtil.isNotEmpty(edge)) {
+        // 封边加星
+        if (StrUtil.isNotEmpty(edge) && StrUtil.length(edge) == 4) {
             row.set(19, edge + " ★");
+            // 封边减尺
+            if (edge.contains("2")) {
+                double length = Double.parseDouble(row.get(14));
+                double width = Double.parseDouble(row.get(15));
+                length = length - (edge.charAt(0) == '2' ? 0.6 : 0) - (edge.charAt(1) == '2' ? 0.6 : 0);
+                width = width - (edge.charAt(2) == '2' ? 0.6 : 0) - (edge.charAt(3) == '2' ? 0.6 : 0);
+                row.set(11, format.format(length));
+                row.set(12, format.format(width));
+            }
         }
-        if (StrUtil.length(edge) == 4 && edge.contains("2")) {
-            double length = Double.parseDouble(row.get(14));
-            double width = Double.parseDouble(row.get(15));
-            length = length - (edge.charAt(0) == '2' ? 0.6 : 0) - (edge.charAt(1) == '2' ? 0.6 : 0);
-            width = width - (edge.charAt(2) == '2' ? 0.6 : 0) - (edge.charAt(3) == '2' ? 0.6 : 0);
-            row.set(11, String.valueOf(length));
-            row.set(12, String.valueOf(width));
+    }
+
+    /**
+     * 9厚度及以下覆盖开料长宽覆盖成品长宽
+     * @param row csv行
+     */
+    public void change9Line(CsvRow row) {
+        // 获取厚度
+        String thick = row.get(16);
+        if (StrUtil.isNotEmpty(thick) && thick.matches("^0?[1-9]$")) {
+            String cutLength = row.get(11);
+            String cutWidth = row.get(12);
+            row.set(14, cutLength);
+            row.set(15, cutWidth);
         }
     }
 }
