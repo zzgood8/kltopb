@@ -87,7 +87,7 @@ public class CsvMatchReplace implements MatchReplace {
     public boolean detectColor(CsvRow row) {
         String color = row.get(10);
         if (StrUtil.isNotEmpty(color)) {
-            String str = color.replaceAll("-", "_");
+            String str = color.replaceAll("-", "");
             return COLORS.contains(str);
         }
         return false;

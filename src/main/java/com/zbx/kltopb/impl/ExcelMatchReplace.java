@@ -105,7 +105,7 @@ public class ExcelMatchReplace implements MatchReplace {
         if (ObjectUtil.isNull(cell)) return false;
         String color = cell.getStringCellValue();
         if (StrUtil.isNotEmpty(color)) {
-            String str = color.replaceAll("-", "_");
+            String str = color.replaceAll("-", "");
             return COLORS.contains(str);
         }
         return false;
