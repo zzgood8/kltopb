@@ -3,12 +3,14 @@ package com.zbx.kltopb.impl;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.lang.Console;
+import cn.hutool.core.text.csv.CsvRow;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.zbx.kltopb.MatchReplace;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -39,8 +41,6 @@ public class ExcelMatchReplace implements MatchReplace {
                     replacePB(row.getCell(27), writer);
                     // 根据封边计算开料长宽
                     calcDecrease(row, writer);
-                    // 华广9mm以下板件开料长宽覆盖成品长宽
-                    change9Line(row, writer);
                 }
             }
             writer.flush();
@@ -77,16 +77,18 @@ public class ExcelMatchReplace implements MatchReplace {
         Cell cell = row.getCell(19);
         if (ObjectUtil.isNull(cell)) return;
         // 封边信息
-        String edge = cell.getStringCellValue();
+        String edge = getStringFormCell(cell);
         if (StrUtil.isNotEmpty(edge) && StrUtil.length(edge) == 4) {
             // 封边信息加星
             writer.getCell(cell.getColumnIndex(), cell.getRowIndex()).setCellValue(edge + " ★");
             // 厚边减尺
             if (edge.contains("2")) {
-                double length = Double.parseDouble(row.getCell(14).getStringCellValue());
-                double width = Double.parseDouble(row.getCell(15).getStringCellValue());
-                length = length - (edge.charAt(0) == '2' ? 0.6 : 0) - (edge.charAt(1) == '2' ? 0.6 : 0);
-                width = width - (edge.charAt(2) == '2' ? 0.6 : 0) - (edge.charAt(3) == '2' ? 0.6 : 0);
+                double length = Double.parseDouble(getStringFormCell(row.getCell(14)));
+                double width = Double.parseDouble(getStringFormCell(row.getCell(15)));
+                double size = 0.6;
+                if (detectColor(row)) size = 0.4;
+                length = length - (edge.charAt(0) == '2' ? size : 0) - (edge.charAt(1) == '2' ? size : 0);
+                width = width - (edge.charAt(2) == '2' ? size : 0) - (edge.charAt(3) == '2' ? size : 0);
                 writer.getCell(11, row.getRowNum()).setCellValue(format.format(length));
                 writer.getCell(12, row.getRowNum()).setCellValue(format.format(width));
             }
@@ -94,22 +96,33 @@ public class ExcelMatchReplace implements MatchReplace {
     }
 
     /**
-     * 9厚度及以下覆盖开料长宽覆盖成品长宽
-     * @param row 表格行
-     * @param writer 写入流
+     * 检测是否是指定颜色
+     * @param row
+     * @return boolean
      */
-    public void change9Line(Row row, ExcelWriter writer) {
-        // 获取厚度列
-        Cell cell = row.getCell(16);
-        if (ObjectUtil.isNull(cell)) return;
-        // 厚度信息
-        String thick = cell.getStringCellValue();
-        if (StrUtil.isNotEmpty(thick) && thick.matches("^0?[1-9]$")) {
-            String cutLength = row.getCell(11).getStringCellValue();
-            String cutWidth = row.getCell(12).getStringCellValue();
-            writer.getCell(14, row.getRowNum()).setCellValue(cutLength);
-            writer.getCell(15, row.getRowNum()).setCellValue(cutWidth);
+    public boolean detectColor(Row row) {
+        Cell cell = row.getCell(10);
+        if (ObjectUtil.isNull(cell)) return false;
+        String color = cell.getStringCellValue();
+        if (StrUtil.isNotEmpty(color)) {
+            String str = color.replaceAll("-", "_");
+            return COLORS.contains(str);
         }
+        return false;
     }
+
+    /**
+     * 将数字格式转为文本
+     * @param cell
+     * @return
+     */
+    private String getStringFormCell(Cell cell) {
+        int i = cell.getCellType().compareTo(CellType.NUMERIC);
+        if (i == 0) {
+            return format.format(cell.getNumericCellValue());
+        }
+        return cell.getStringCellValue();
+    }
+
 
 }

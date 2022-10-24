@@ -10,6 +10,9 @@ import com.zbx.kltopb.impl.CsvMatchReplace;
 import com.zbx.kltopb.impl.ExcelMatchReplace;
 
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * @日期 2022/10/7
@@ -34,6 +37,8 @@ public class MainApplication {
 
         if (!inputDir.exists() || !inputDir.isDirectory()) exit("输入目录不存在或者不是文件夹");
         if (!outputDir.exists() || !outputDir.isDirectory()) exit("输出目录不存在或者不是文件夹");
+
+        loadConfig();
 
         try {
             convert(inputDir, outputDir);
@@ -72,5 +77,17 @@ public class MainApplication {
     public static void exit(String msg) {
         System.out.println(msg);
         System.exit(-1);
+    }
+
+    public static void loadConfig() {
+        try {
+            File file = new File("../config/color");
+            List<String> list = FileUtil.readLines(file, StandardCharsets.UTF_8);
+            boolean b = MatchReplace.COLORS.addAll(list);
+            if (!b) exit("无法读取配置文件");
+        } catch (Exception e) {
+            exit("无法加载配置文件: " + e.getMessage());
+        }
+
     }
 }

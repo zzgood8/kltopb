@@ -35,7 +35,6 @@ public class CsvMatchReplace implements MatchReplace {
             replacePB(row, 9);
             replacePB(row, 27);
             calcDecrease(row);
-            change9Line(row);
         }
         writer.write(read);
         writer.flush();
@@ -70,8 +69,10 @@ public class CsvMatchReplace implements MatchReplace {
             if (edge.contains("2")) {
                 double length = Double.parseDouble(row.get(14));
                 double width = Double.parseDouble(row.get(15));
-                length = length - (edge.charAt(0) == '2' ? 0.6 : 0) - (edge.charAt(1) == '2' ? 0.6 : 0);
-                width = width - (edge.charAt(2) == '2' ? 0.6 : 0) - (edge.charAt(3) == '2' ? 0.6 : 0);
+                double size = 0.6;
+                if (detectColor(row)) size = 0.4;
+                length = length - (edge.charAt(0) == '2' ? size : 0) - (edge.charAt(1) == '2' ? size : 0);
+                width = width - (edge.charAt(2) == '2' ? size : 0) - (edge.charAt(3) == '2' ? size : 0);
                 row.set(11, format.format(length));
                 row.set(12, format.format(width));
             }
@@ -79,18 +80,17 @@ public class CsvMatchReplace implements MatchReplace {
     }
 
     /**
-     * 9厚度及以下覆盖开料长宽覆盖成品长宽
-     * @param row csv行
+     * 检测是否是指定颜色
+     * @param row
+     * @return boolean
      */
-    public void change9Line(CsvRow row) {
-        // 获取厚度
-        String thick = row.get(16);
-        if (StrUtil.isNotEmpty(thick) && thick.matches("^0?[1-9]$")) {
-            String cutLength = row.get(11);
-            String cutWidth = row.get(12);
-            row.set(14, cutLength);
-            row.set(15, cutWidth);
+    public boolean detectColor(CsvRow row) {
+        String color = row.get(10);
+        if (StrUtil.isNotEmpty(color)) {
+            String str = color.replaceAll("-", "_");
+            return COLORS.contains(str);
         }
+        return false;
     }
 }
 
