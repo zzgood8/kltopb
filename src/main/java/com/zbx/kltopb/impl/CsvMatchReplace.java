@@ -64,7 +64,7 @@ public class CsvMatchReplace implements MatchReplace {
         String edge = row.get(19);
         // 封边加星
         if (StrUtil.isNotEmpty(edge) && StrUtil.length(edge) == 4) {
-            row.set(19, edge + " ★");
+//            row.set(19, edge + " ★");
             // 封边减尺
             if (detectColor(row)) {
                 core(row, null, 0.8);

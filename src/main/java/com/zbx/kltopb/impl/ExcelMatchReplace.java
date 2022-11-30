@@ -80,7 +80,7 @@ public class ExcelMatchReplace implements MatchReplace {
         String edge = getStringFormCell(cell);
         if (StrUtil.isNotEmpty(edge) && StrUtil.length(edge) == 4) {
             // 封边信息加星
-            writer.getCell(cell.getColumnIndex(), cell.getRowIndex()).setCellValue(edge + " ★");
+//            writer.getCell(cell.getColumnIndex(), cell.getRowIndex()).setCellValue(edge + " ★");
             // 厚边减尺
             if (detectColor(row)) {
                 core(writer, row, null, 0.8);
