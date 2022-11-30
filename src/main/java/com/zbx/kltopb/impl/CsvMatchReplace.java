@@ -66,17 +66,26 @@ public class CsvMatchReplace implements MatchReplace {
         if (StrUtil.isNotEmpty(edge) && StrUtil.length(edge) == 4) {
             row.set(19, edge + " ★");
             // 封边减尺
-            if (edge.contains("2")) {
-                double length = Double.parseDouble(row.get(14));
-                double width = Double.parseDouble(row.get(15));
-                double size = 0.6;
-                if (detectColor(row)) size = 0.4;
-                length = length - (edge.charAt(0) == '2' ? size : 0) - (edge.charAt(1) == '2' ? size : 0);
-                width = width - (edge.charAt(2) == '2' ? size : 0) - (edge.charAt(3) == '2' ? size : 0);
-                row.set(11, format.format(length));
-                row.set(12, format.format(width));
+            if (detectColor(row)) {
+                core(row, null, 0.8);
+            } else if (edge.contains("2")) {
+                core(row, edge, 0.6);
             }
         }
+    }
+
+    private void core(CsvRow row, String edge, double size) {
+        double length = Double.parseDouble(row.get(14));
+        double width = Double.parseDouble(row.get(15));
+        if (edge == null) {
+            length = length - size;
+            width = width - size;
+        } else {
+            length = length - (edge.charAt(0) == '2' ? size : 0) - (edge.charAt(1) == '2' ? size : 0);
+            width = width - (edge.charAt(2) == '2' ? size : 0) - (edge.charAt(3) == '2' ? size : 0);
+        }
+        row.set(11, format.format(length));
+        row.set(12, format.format(width));
     }
 
     /**

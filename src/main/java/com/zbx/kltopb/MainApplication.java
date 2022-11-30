@@ -1,5 +1,8 @@
 package com.zbx.kltopb;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.core.io.FileUtil;
@@ -12,7 +15,9 @@ import com.zbx.kltopb.impl.ExcelMatchReplace;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @日期 2022/10/7
@@ -83,7 +88,11 @@ public class MainApplication {
         try {
             File file = new File("../config/color");
             List<String> list = FileUtil.readLines(file, StandardCharsets.UTF_8);
-            boolean b = MatchReplace.COLORS.addAll(list);
+            Set<String> set = new HashSet<>();
+            list.forEach(item -> {
+                if (StrUtil.isNotEmpty(item.trim())) set.add(item);
+            });
+            boolean b = MatchReplace.COLORS.addAll(set);
             if (!b) exit("无法读取配置文件");
         } catch (Exception e) {
             exit("无法加载配置文件: " + e.getMessage());

@@ -82,17 +82,26 @@ public class ExcelMatchReplace implements MatchReplace {
             // 封边信息加星
             writer.getCell(cell.getColumnIndex(), cell.getRowIndex()).setCellValue(edge + " ★");
             // 厚边减尺
-            if (edge.contains("2")) {
-                double length = Double.parseDouble(getStringFormCell(row.getCell(14)));
-                double width = Double.parseDouble(getStringFormCell(row.getCell(15)));
-                double size = 0.6;
-                if (detectColor(row)) size = 0.4;
-                length = length - (edge.charAt(0) == '2' ? size : 0) - (edge.charAt(1) == '2' ? size : 0);
-                width = width - (edge.charAt(2) == '2' ? size : 0) - (edge.charAt(3) == '2' ? size : 0);
-                writer.getCell(11, row.getRowNum()).setCellValue(format.format(length));
-                writer.getCell(12, row.getRowNum()).setCellValue(format.format(width));
+            if (detectColor(row)) {
+                core(writer, row, null, 0.8);
+            } else if (edge.contains("2")) {
+                core(writer, row, edge, 0.6);
             }
         }
+    }
+
+    public void core(ExcelWriter writer, Row row, String edge, double size) {
+        double length = Double.parseDouble(getStringFormCell(row.getCell(14)));
+        double width = Double.parseDouble(getStringFormCell(row.getCell(15)));
+        if (edge == null) {
+            length = length - size;
+            width = width - size;
+        } else {
+            length = length - (edge.charAt(0) == '2' ? size : 0) - (edge.charAt(1) == '2' ? size : 0);
+            width = width - (edge.charAt(2) == '2' ? size : 0) - (edge.charAt(3) == '2' ? size : 0);
+        }
+        writer.getCell(11, row.getRowNum()).setCellValue(format.format(length));
+        writer.getCell(12, row.getRowNum()).setCellValue(format.format(width));
     }
 
     /**
